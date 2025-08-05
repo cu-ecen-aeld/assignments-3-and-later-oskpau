@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
 	openlog(NULL, 0, LOG_USER);
 	syslog(LOG_INFO, "writer application started");
 	if (argc != 3) {
-		syslog(LOG_ERR, "Invalid number of arguments! Number of given arguments: %d. Usage: %d <arg1> <arg2>\n", argc, argv[0]);
+		syslog(LOG_ERR, "Invalid number of arguments! Number of given arguments: %d. Usage: %s <arg1> <arg2>\n", argc, argv[0]);
 		return 1;
 	}
 
