@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 		syslog(LOG_ERR, "Error occured while opening file");
 		return 1;
 	}
-
+	syslog(LOG_DEBUG, "Writing %s to %s", argv[2], argv[1]);
 	fputs(argv[2], file_ptr);
 
 	fclose(file_ptr);
