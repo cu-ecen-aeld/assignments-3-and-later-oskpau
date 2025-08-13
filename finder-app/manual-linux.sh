@@ -89,7 +89,6 @@ echo "Library dependencies"
 cd "${OUTDIR}"/rootfs
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
-mkdir "${OUTDIR}/rootfs/lib" "${OUTDIR}/rootfs/lib64"
 
 # TODO: Add library dependencies to rootfs
 cp "${TOOLCHAIN_LIBC}/lib64/libm.so.6" "${OUTDIR}/rootfs/lib64" 
