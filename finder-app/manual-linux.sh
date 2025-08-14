@@ -111,11 +111,11 @@ make
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
 cp -r "${FINDER_APP_DIR}"/* "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"/../conf "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"/../assignments "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"/../assignment-autotest "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"/../examples "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"/../student-test "${OUTDIR}"/rootfs/home
+cp -r conf "${OUTDIR}"/rootfs/home
+cp -r assignments "${OUTDIR}"/rootfs/home
+cp -r assignment-autotest "${OUTDIR}"/rootfs/home
+cp -r examples "${OUTDIR}"/rootfs/home
+cp -r student-test "${OUTDIR}"/rootfs/home
 
 # TODO: Chown the root directory
 cd "${OUTDIR}"
