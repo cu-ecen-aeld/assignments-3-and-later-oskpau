@@ -110,6 +110,7 @@ make
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
+cd ..
 cp -r "${FINDER_APP_DIR}"/* "${OUTDIR}"/rootfs/home
 cp -r conf "${OUTDIR}"/rootfs/home
 cp -r assignments "${OUTDIR}"/rootfs/home
