@@ -111,11 +111,11 @@ make
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
 cp -r "${FINDER_APP_DIR}"/* "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"../conf "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"../assignments "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"../assignment-autotest "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"../examples "${OUTDIR}"/rootfs/home
-cp -r "${FINDER_APP_DIR}"../student-test "${OUTDIR}"/rootfs/home
+cp -r "${FINDER_APP_DIR}"/../conf "${OUTDIR}"/rootfs/home
+cp -r "${FINDER_APP_DIR}"/../assignments "${OUTDIR}"/rootfs/home
+cp -r "${FINDER_APP_DIR}"/../assignment-autotest "${OUTDIR}"/rootfs/home
+cp -r "${FINDER_APP_DIR}"/../examples "${OUTDIR}"/rootfs/home
+cp -r "${FINDER_APP_DIR}"/../student-test "${OUTDIR}"/rootfs/home
 
 # TODO: Chown the root directory
 cd "${OUTDIR}"
@@ -125,4 +125,6 @@ sudo chown -R root:root rootfs/*
 cd "$OUTDIR/rootfs"
 find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
 cd "${OUTDIR}"
+mkdir -p /tmp/aesd-autograder
 gzip -f initramfs.cpio
+cp initramfs.cpio.gz /tmp/aesd-autograder
