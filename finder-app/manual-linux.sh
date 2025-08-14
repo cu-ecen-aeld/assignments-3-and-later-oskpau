@@ -12,7 +12,8 @@ BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
-TOOLCHAIN_LIBC=/usr/bin/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-gnu/aarch64-none-linux-gnu/libc/
+TOOLCHAIN_LIBC=/usr/bin/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc
+SCRIPT_DIR=$(pwd)
 
 if [ $# -lt 1 ]
 then
@@ -101,14 +102,13 @@ sudo mknod -m 666 dev/null c 1 3
 sudo mknod -m 600 dev/console c 5 1
 
 # TODO: Clean and build the writer utility
-cd $0
+cd "${SCRIPT_DIR}"
 make clean
 make
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-
-cp -r $0/* "${OUTDIR}"/rootfs/home
+cp -r "${SCRIPT_DIR}"/* "${OUTDIR}"/rootfs/home
 
 # TODO: Chown the root directory
 cd "${OUTDIR}"
@@ -116,5 +116,6 @@ sudo chown -R root:root rootfs/*
 
 # TODO: Create initramfs.cpio.gz
 cd "$OUTDIR/rootfs"
-find . | cpio -H newc -ov --owner root:root ${OUTDIR}/initramfs.cpio
+find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
+cd "${OUTDIR}"
 gzip -f initramfs.cpio
