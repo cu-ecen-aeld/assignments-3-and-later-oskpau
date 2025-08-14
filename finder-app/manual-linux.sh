@@ -105,6 +105,7 @@ sudo mknod -m 600 dev/console c 5 1
 
 # TODO: Clean and build the writer utility
 cd "${FINDER_APP_DIR}"
+
 make clean
 make
 
@@ -112,6 +113,7 @@ make
 # on the target rootfs
 cd ..
 cp -r "${FINDER_APP_DIR}"/* "${OUTDIR}"/rootfs/home
+rm -rf "${OUTDIR}"/rootfs/home/conf
 cp -r conf "${OUTDIR}"/rootfs/home
 cp -r assignments "${OUTDIR}"/rootfs/home
 cp -r assignment-autotest "${OUTDIR}"/rootfs/home
