@@ -127,5 +127,4 @@ sudo chown -R root:root rootfs/*
 cd "$OUTDIR/rootfs"
 find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
 cd "${OUTDIR}"
-mkdir -p /tmp/aesd-autograder
 gzip -f initramfs.cpio
