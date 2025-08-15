@@ -139,7 +139,7 @@ if [ ! -e "initramfs.cpio.gz" ]; then
 	exit 99
 fi
 
-gzip -d initramfs.cpio.gz
+gzip -kd initramfs.cpio.gz
 sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_copy
 
 if [ $(diff initramfs.cpio.sha256_original initramfs.cpio.sha256_copy) != 0 ]; then
