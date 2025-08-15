@@ -51,8 +51,8 @@ if [ ! -e "${OUTDIR}/Image" ]; then
 	exit 99
 fi
 
-sha256sum ${OUTDIR}/Image | awk '{ print $1 }' > Image_copy.sha256
-diff Image_copy.sha256 Image.sha256sum
+sha256sum ${OUTDIR}/Image | awk '{ print $1 }' > Image_copy.sha256sum
+diff Image_copy.sha256sum Image.sha256sum
 if [  $? != 0 ]; then
 	echo "Copy of Image was corrupted"
 	exit 99
@@ -93,12 +93,22 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
-cd "${FINDER_APP_DIR}"/../
-tar xzf libc.tar.gz
-cp libc/lib64/libm.so.6 "${OUTDIR}"/rootfs/lib64 
-cp libc/lib64/libresolv.so.2 "${OUTDIR}"/rootfs/lib64 
-cp libc/lib64/libc.so.6 "${OUTDIR}"/rootfs/lib64 
-cp libc/lib/ld-linux-aarch64.so.1 "${OUTDIR}"/rootfs/lib 
+
+echo "Adding library dependencies"
+SYSROOT=$(realpath $(${CROSS_COMPILE}gcc -print-sysroot))
+echo "SYSROOT is ${SYSROOT}"
+${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpreter" | while read -r line; do
+    INTERPRETER=$(echo "$line" | awk '{print $NF}' | sed 's/]$//')
+    echo "Copying ${INTERPRETER} to ${OUTDIR}/rootfs"
+    cp -L "${SYSROOT}${INTERPRETER}" "${OUTDIR}/rootfs/lib"
+done
+
+${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library" | while read -r line; do
+    LIBRARY=$(echo "$line" | awk '{print $NF}' | sed 's/[][]//g')
+    echo "Copying ${LIBRARY} to ${OUTDIR}/rootfs"
+    cp -L "${SYSROOT}/lib64/${LIBRARY}" "${OUTDIR}/rootfs/lib64"
+done
+
 
 # TODO: Make device nodes
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
@@ -108,7 +118,7 @@ sudo mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
 cd "${FINDER_APP_DIR}"
 
 make clean
-make
+make CROSS_COMPILE=aarch64-none-linux-gnu- all
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
@@ -128,7 +138,7 @@ cd "$OUTDIR/rootfs"
 find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
 
 cd "${OUTDIR}"
-sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_original
+sha256sum initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_original
 if [ ! -e "initramfs.cpio" ]; then
 	echo "Could not create initramfs.cpio"
 	exit 99
@@ -141,7 +151,7 @@ if [ ! -e "initramfs.cpio.gz" ]; then
 fi
 
 gzip -kd initramfs.cpio.gz
-sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_copy
+sha256sum initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_copy
 diff initramfs.cpio.sha256_original initramfs.cpio.sha256_copy
 if [ $? != 0 ]; then
 	echo "initramfs was corrupt"
