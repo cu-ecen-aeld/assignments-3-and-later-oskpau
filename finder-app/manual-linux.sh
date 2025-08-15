@@ -134,10 +134,10 @@ cp -r student-test "${OUTDIR}"/rootfs/home
 sudo chown -R root:root ${OUTDIR}/rootfs
 
 # TODO: Create initramfs.cpio.gz
-cd "$OUTDIR/rootfs"
-find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
+cd ${OUTDIR}/rootfs
+find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
 
-cd "${OUTDIR}"
+cd ..
 sha256sum initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_original
 if [ ! -e "initramfs.cpio" ]; then
 	echo "Could not create initramfs.cpio"
