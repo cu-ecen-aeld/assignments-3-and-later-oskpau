@@ -122,13 +122,13 @@ make CROSS_COMPILE=aarch64-none-linux-gnu- all
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cd ..
-cp -r "${FINDER_APP_DIR}" "${OUTDIR}"/rootfs/home
-cp -r conf "${OUTDIR}"/rootfs/home
-cp -r assignments "${OUTDIR}"/rootfs/home
-cp -r assignment-autotest "${OUTDIR}"/rootfs/home
-cp -r examples "${OUTDIR}"/rootfs/home
-cp -r student-test "${OUTDIR}"/rootfs/home
+cp finder.sh  ${OUTDIR}/rootfs/home
+cp finder-test.sh ${OUTDIR}/rootfs/home
+cp writer ${OUTDIR}/rootfs/home
+cp writer.sh ${OUTDIR}/rootfs/home
+cp conf/username.txt ${OUTDIR}/rootfs/home
+cp conf/assignment.txt ${OUTDIR}/rootfs/home
+cp autorun-qemu.sh ${OUTDIR}/rootfs/home
 
 # TODO: Chown the root directory
 sudo chown -R root:root ${OUTDIR}/rootfs
