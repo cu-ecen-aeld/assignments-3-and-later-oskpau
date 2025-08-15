@@ -52,7 +52,8 @@ if [ ! -e "${OUTDIR}/Image" ]; then
 fi
 
 sha256sum ${OUTDIR}/Image | awk '{ print $1 }' > Image_copy.sha256
-if [ $(diff Image_copy.sha256 Image.sha256sum) != 0 ]; then
+diff Image_copy.sha256 Image.sha256sum
+if [  $? != 0 ]; then
 	echo "Copy of Image was corrupted"
 	exit 99
 fi
@@ -120,7 +121,7 @@ cp -r examples "${OUTDIR}"/rootfs/home
 cp -r student-test "${OUTDIR}"/rootfs/home
 
 # TODO: Chown the root directory
-sudo chown -R root:root ${OUTDIR}/rootfs 
+sudo chown -R root:root ${OUTDIR}/rootfs
 
 # TODO: Create initramfs.cpio.gz
 cd "$OUTDIR/rootfs"
@@ -141,8 +142,8 @@ fi
 
 gzip -kd initramfs.cpio.gz
 sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_copy
-
-if [ $(diff initramfs.cpio.sha256_original initramfs.cpio.sha256_copy) != 0 ]; then
+diff initramfs.cpio.sha256_original initramfs.cpio.sha256_copy
+if [ $? != 0 ]; then
 	echo "initramfs was corrupt"
 	exit 99
 fi
