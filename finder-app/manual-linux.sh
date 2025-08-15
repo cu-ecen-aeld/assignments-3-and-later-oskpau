@@ -43,7 +43,19 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 fi
 
 echo "Adding the Image in outdir"
+
+sha256sum ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image | awk '{ print $1 }' > Image.sha256sum
 cp ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ${OUTDIR}/
+if [ ! -e "${OUTDIR}/Image" ]; then
+	echo "Failed to copy image"
+	exit 99
+fi
+
+sha256sum ${OUTDIR}/Image | awk '{ print $1 }' > Image_copy.sha256
+if [ $(diff Image_copy.sha256 Image.sha256sum) != 0 ]; then
+	echo "Copy of Image was corrupted"
+	exit 99
+fi
 
 echo "Creating the staging directory for the root filesystem"
 if [ -d "${OUTDIR}/rootfs" ]
@@ -115,13 +127,22 @@ cd "$OUTDIR/rootfs"
 find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
 
 cd "${OUTDIR}"
+sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_original
 if [ ! -e "initramfs.cpio" ]; then
 	echo "Could not create initramfs.cpio"
 	exit 99
 fi
 
-gzip -kf initramfs.cpio
+gzip -f initramfs.cpio
 if [ ! -e "initramfs.cpio.gz" ]; then
 	echo "Could not create initramfs.cpio.gz"
+	exit 99
+fi
+
+gzip -d initramfs.cpio.gz
+sha256 initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_copy
+
+if [ $(diff initramfs.cpio.sha256_original initramfs.cpio.sha256_copy) != 0 ]; then
+	echo "initramfs was corrupt"
 	exit 99
 fi
