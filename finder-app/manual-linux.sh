@@ -127,8 +127,12 @@ sudo chown -R root:root rootfs/*
 cd "$OUTDIR/rootfs"
 find . | cpio -H newc -ov --owner=root:root > ${OUTDIR}/initramfs.cpio
 cd "${OUTDIR}"
+if [ ! -e "initramfs.cpio" ]; then
+	echo "Could not create initramfs.cpio"
+	exit 99
+fi
 gzip -kf initramfs.cpio
-if [ -e "initramfs.cpio.gz" ]; then
+if [ ! -e "initramfs.cpio.gz" ]; then
 	echo "Could not create initramfs.cpio.gz"
 	exit 99
 fi
