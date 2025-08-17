@@ -45,7 +45,7 @@ fi
 echo "Adding the Image in outdir"
 
 sha256sum ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image | awk '{ print $1 }' > Image.sha256sum
-cp ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ${OUTDIR}/
+cp -p ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ${OUTDIR}/
 if [ ! -e "${OUTDIR}/Image" ]; then
 	echo "Failed to copy image"
 	exit 99
@@ -131,7 +131,7 @@ cp conf/assignment.txt ${OUTDIR}/rootfs/home
 cp autorun-qemu.sh ${OUTDIR}/rootfs/home
 
 # TODO: Chown the root directory
-sudo chown -R root:root ${OUTDIR}/rootfs
+sudo chown -R root:root ${OUTDIR}/*
 
 # TODO: Create initramfs.cpio.gz
 cd ${OUTDIR}/rootfs
