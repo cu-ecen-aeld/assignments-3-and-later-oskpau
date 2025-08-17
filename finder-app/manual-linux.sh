@@ -122,22 +122,22 @@ make CROSS_COMPILE=aarch64-none-linux-gnu- all
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cp finder.sh  ${OUTDIR}/rootfs/home
-cp finder-test.sh ${OUTDIR}/rootfs/home
-cp writer ${OUTDIR}/rootfs/home
-cp writer.sh ${OUTDIR}/rootfs/home
-cp conf/username.txt ${OUTDIR}/rootfs/home
-cp conf/assignment.txt ${OUTDIR}/rootfs/home
-cp autorun-qemu.sh ${OUTDIR}/rootfs/home
+cp -p finder.sh  ${OUTDIR}/rootfs/home
+cp -p finder-test.sh ${OUTDIR}/rootfs/home
+cp -p writer ${OUTDIR}/rootfs/home
+cp -p writer.sh ${OUTDIR}/rootfs/home
+cp -p conf/username.txt ${OUTDIR}/rootfs/home
+cp -p conf/assignment.txt ${OUTDIR}/rootfs/home
+cp -p autorun-qemu.sh ${OUTDIR}/rootfs/home
 
 # TODO: Chown the root directory
-sudo chown -R root:root ${OUTDIR}/*
+sudo chown -R root:root ${OUTDIR}/rootfs
 
 # TODO: Create initramfs.cpio.gz
 cd ${OUTDIR}/rootfs
 find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
 
-cd ..
+cd ${OUTDIR}
 sha256sum initramfs.cpio | awk '{ print $1 }' > initramfs.cpio.sha256_original
 if [ ! -e "initramfs.cpio" ]; then
 	echo "Could not create initramfs.cpio"
