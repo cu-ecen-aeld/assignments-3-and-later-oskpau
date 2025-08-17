@@ -36,9 +36,14 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     git checkout ${KERNEL_VERSION}
 
     # TODO: Add your kernel build steps here
-	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper 
+	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
 	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} defconfig
-	make -j8 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
+	if [ ! -d "${FINDER_APP_DIR}/conf" ]; then
+		mkdir -p "${FINDER_APP_DIR}"/conf
+	fi
+	cp .config ${FINDER_APP_DIR}/conf/.config	
+	make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
+	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules
 	make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} dtbs
 fi
 
@@ -95,20 +100,10 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 # TODO: Add library dependencies to rootfs
 
 echo "Adding library dependencies"
-SYSROOT=$(realpath $(${CROSS_COMPILE}gcc -print-sysroot))
-echo "SYSROOT is ${SYSROOT}"
-${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpreter" | while read -r line; do
-    INTERPRETER=$(echo "$line" | awk '{print $NF}' | sed 's/]$//')
-    echo "Copying ${INTERPRETER} to ${OUTDIR}/rootfs"
-    cp -L "${SYSROOT}${INTERPRETER}" "${OUTDIR}/rootfs/lib"
-done
-
-${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library" | while read -r line; do
-    LIBRARY=$(echo "$line" | awk '{print $NF}' | sed 's/[][]//g')
-    echo "Copying ${LIBRARY} to ${OUTDIR}/rootfs"
-    cp -L "${SYSROOT}/lib64/${LIBRARY}" "${OUTDIR}/rootfs/lib64"
-done
-
+COMPILER_PATH=$(dirname $(which ${CROSS_COMPILE}gcc))
+cd ${COMPILER_PATH}/../${CROSS_COMPILE%-}/libc
+cp lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib/
+cp lib64/libm.so.6 lib64/libresolv.so.2 lib64/libc.so.6 ${OUTDIR}/rootfs/lib64/
 
 # TODO: Make device nodes
 sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
@@ -116,7 +111,6 @@ sudo mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
 
 # TODO: Clean and build the writer utility
 cd "${FINDER_APP_DIR}"
-
 make clean
 make CROSS_COMPILE=aarch64-none-linux-gnu- all
 
