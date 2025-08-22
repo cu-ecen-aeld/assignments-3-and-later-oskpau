@@ -8,7 +8,7 @@ set -u
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp
-username=$(cat conf/username.txt)
+username=$(cat /etc/conf/username.txt)
 
 if [ $# -lt 3 ]
 then
@@ -58,7 +58,7 @@ do
 	writer "$WRITEDIR/assignment4-result.txt" "$WRITESTR"
 done
 
-OUTPUTSTRING=$(finder "$WRITEDIR" "$WRITESTR")
+OUTPUTSTRING=$(./etc/finder-app/finder.sh "$WRITEDIR" "$WRITESTR")
 
 # remove temporary directories
 rm -rf /tmp/aeld-data
