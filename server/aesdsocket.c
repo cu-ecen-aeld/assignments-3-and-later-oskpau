@@ -19,7 +19,6 @@
 #define PORT "9000"  // the port users will be connecting to
 #define DATAFILE "/var/tmp/aesdsocketdata"
 #define BACKLOG 10   // how many pending connections queue will hold
-#define MAX_LENGTH 1024
 
 void sigchld_handler(int s)
 {
@@ -71,19 +70,19 @@ int main(void)
         if ((sfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
             perror("server: socket");
-            exit(EXIT_FAILURE);
+            continue;
         }
 
         if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &yes,
                 sizeof(int)) == -1) {
             perror("setsockopt");
-            exit(EXIT_FAILURE);
+            exit(1);
         }
 
         if (bind(sfd, p->ai_addr, p->ai_addrlen) == -1) {
             close(sfd);
             perror("server: bind");
-            exit(EXIT_FAILURE);
+            continue;
         }
 
         break;
@@ -93,12 +92,12 @@ int main(void)
 
     if (p == NULL)  {
         fprintf(stderr, "server: failed to bind\n");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     if (listen(sfd, BACKLOG) == -1) {
         perror("listen");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     sa.sa_handler = sigchld_handler; // reap all dead processes
@@ -106,36 +105,28 @@ int main(void)
     sa.sa_flags = SA_RESTART;
     if (sigaction(SIGCHLD, &sa, NULL) == -1) {
         perror("sigaction");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     printf("server: waiting for connections...\n");
 
     while(1) {  // main accept() loop
-		char buffer[MAX_LENGTH];
-
         sin_size = sizeof client_addr;
         cfd = accept(sfd, (struct sockaddr *)&client_addr,
             &sin_size);
         if (cfd == -1) {
             perror("accept");
-            exit(EXIT_FAILURE);
+            continue;
         }
-		
+
         inet_ntop(client_addr.ss_family,
             get_in_addr((struct sockaddr *)&client_addr),
             s, sizeof s);
-        printf("Accepted connection from %s\n", s);
-
-		int bytes_recv = recv(cfd, buffer, MAX_LENGTH, 0);
-		if (bytes_recv == -1) {
-			perror("bytes_recv");
-			exit(EXIT_FAILURE);
-		}
+        printf("server: got connection from %s\n", s);
 
         if (!fork()) { // this is the child process
             close(sfd); // child doesn't need the listener
-            if (send(cfd, buffer, bytes_recv, 0) == -1)
+            if (send(cfd, "Hello, world!", 13, 0) == -1)
                 perror("send");
             close(cfd);
             exit(0);
