@@ -16,8 +16,6 @@
 #include <signal.h>
 #include <syslog.h>
 
-#include "threading.h"
-
 #define PORT "9000"  // the port users will be connecting to
 #define DATAFILE "/var/tmp/aesdsocketdata"
 #define BACKLOG 10   // how many pending connections queue will hold
@@ -46,40 +44,9 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void* handle_recv_data(void* thread_param) {
-	struct thread_data* thread_func_args = (struct thread_data *) thread_param;
-
-	int *sfd = thread_func_args->server_socket;
-	close(*sfd); // child doesn't need the listener
-    
-	int *cfd = thread_func_args->client_socket;
-	char buffer[MAX_LENGTH];
-	int bytes_recv = recv(*cfd, buffer, MAX_LENGTH, 0);
-	
-	if (bytes_recv == -1) {
-		perror("bytes_recv");
-		exit(EXIT_FAILURE);
-	}
-	
-	if (send(*cfd, buffer, bytes_recv, 0) == -1)
-		perror("send");
-	thread_func_args->thread_complete_success = true;
-	return thread_param;
-}
-
 int main(void)
 {
-	// threading params
-	int ret;
-	pthread_t thread;
-	pthread_mutex_t *mutex;
-
-	struct thread_data *td = (struct thread_data*)malloc(sizeof(struct thread_data));
-	td->thread_complete_success = false;
-	td->wait_to_obtain_ms = 1000;
-	td->wait_to_release_ms = 1000;
-    
-	// listen on sock_fd, new connection on cfd
+    // listen on sock_fd, new connection on cfd
     int sfd, cfd;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage client_addr; // connector's address info
@@ -144,7 +111,9 @@ int main(void)
 
     printf("server: waiting for connections...\n");
 
-    while(1) {  // main accept() loop	
+    while(1) {  // main accept() loop
+		char buffer[MAX_LENGTH];
+
         sin_size = sizeof client_addr;
         cfd = accept(sfd, (struct sockaddr *)&client_addr,
             &sin_size);
@@ -152,36 +121,25 @@ int main(void)
             perror("accept");
             exit(EXIT_FAILURE);
         }
-
+		
         inet_ntop(client_addr.ss_family,
             get_in_addr((struct sockaddr *)&client_addr),
             s, sizeof s);
         printf("Accepted connection from %s\n", s);
-		
-		// point the thread data struct the memory location of cfd
-		td->client_socket = &cfd;
-		td->server_socket = &sfd;
 
-		int rc;
-		rc = pthread_mutex_lock(&mutex);
-		ret = pthread_create(&thread, NULL, handle_recv_data, td);
-		if (rc && !ret) {
-			perror("pthread_mutex_lock");
+		int bytes_recv = recv(cfd, buffer, MAX_LENGTH, 0);
+		if (bytes_recv == -1) {
+			perror("bytes_recv");
 			exit(EXIT_FAILURE);
 		}
 
-		if (ret) {
-			free(td);
-			perror("pthread_create");
-			exit(EXIT_FAILURE);
-		}
-
-		rc = pthread_mutex_unlock(&mutex);
-		if (rc && !ret) {
-			perror("pthread_mutex_unlock");
-			exit(EXIT_FAILURE);
-		}
-
+        if (!fork()) { // this is the child process
+            close(sfd); // child doesn't need the listener
+            if (send(cfd, buffer, bytes_recv, 0) == -1)
+                perror("send");
+            close(cfd);
+            exit(0);
+        }
         close(cfd);  // parent doesn't need this
     }
 
