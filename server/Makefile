@@ -8,7 +8,7 @@ BINARY = aesdsocket
 
 CFLAGS = -Wall -O2
 
-all: $(BINARY)
+all: clean $(BINARY)
 
 $(BINARY): $(OBJ)
 	$(CC) $(OBJ) -o $@
