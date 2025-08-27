@@ -12,6 +12,8 @@ struct thread_data{
 	int wait_to_obtain_ms;
 	int wait_to_release_ms;
 	unsigned long thread_id;
+	int *client_socket;
+	int *server_socket;
 	pthread_mutex_t *pthread_mutex;
 };
 
