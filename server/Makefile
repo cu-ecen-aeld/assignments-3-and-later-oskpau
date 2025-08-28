@@ -6,7 +6,7 @@ SRC = aesdsocket.c
 OBJ = aesdsocket.o
 BINARY = aesdsocket
 
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -Werror -O2
 
 all: $(BINARY)
 
