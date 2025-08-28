@@ -1,4 +1,5 @@
 *.o
+server/aesdsocket
 writer
 Test_*_Runner.c
 build/
