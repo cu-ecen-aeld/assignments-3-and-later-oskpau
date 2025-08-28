@@ -26,12 +26,17 @@
 
 #define DATA_FILE "/var/tmp/aesdsocketdata"
 
+static int sfd = -1;
 volatile sig_atomic_t exit_flag = 0;
 
 void signal_handler(int sig)
 {
     syslog(LOG_INFO, "Caught signal, exiting");
     exit_flag = 1;
+	if (sfd != -1) {
+		shutdown(sfd, SHUT_RDWR);
+		close(sfd);
+	}
 }
 
 // get sockaddr, IPv4 or IPv6:
@@ -70,7 +75,7 @@ int main(int argc, char *argv[])
     }
 
     // listen on sock_fd, new connection on cfd
-    int sfd, cfd;
+    int cfd;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address info
     socklen_t sin_size;
@@ -93,6 +98,7 @@ int main(int argc, char *argv[])
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
+			sfd = -1;
             syslog(LOG_ERR, "server: socket");
             continue;
         }
@@ -158,7 +164,7 @@ int main(int argc, char *argv[])
             syslog(LOG_ERR, "accept");
             continue;
         }
-
+		
         inet_ntop(their_addr.ss_family,
             get_in_addr((struct sockaddr *)&their_addr),
             s, sizeof s);
@@ -271,6 +277,7 @@ int main(int argc, char *argv[])
 close_connection:
         free(buf);
         syslog(LOG_INFO, "Closed connection from %s", s);
+		shutdown(cfd, SHUT_RDWR);
         close(cfd);
     }
 
