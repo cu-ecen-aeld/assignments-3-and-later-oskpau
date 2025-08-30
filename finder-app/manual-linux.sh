@@ -131,6 +131,12 @@ cp *.sh ${OUTDIR}/rootfs/home
 cp writer ${OUTDIR}/rootfs/home
 cp ../conf/*.txt ${OUTDIR}/rootfs/home/conf/
 
+cd ${SOURCEDIR}../server
+make clean
+CROSS_COMPILE=${CROSS_COMPILE} make
+cp aesdsocket ${OUTDIR}/rootfs/home
+cp start-stop-aesdsocket ${OUTDIR}/rootfs/home
+
 # TODO: Chown the root directory
 sudo chown -R root:root ${OUTDIR}/rootfs
 
